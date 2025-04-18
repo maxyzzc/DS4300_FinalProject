@@ -79,11 +79,11 @@ def main():
             file_name = uploaded_file.name
             s3_key = f"{file_name}"
 
-            """s3_client.upload_fileobj(
+            s3_client.upload_fileobj(
                             uploaded_file,
                             aws_credentials["s3_bucket_name"],
                             s3_key
-                        )"""
+                        )
 
             st.success(f"✅ Uploaded to S3 bucket `{aws_credentials['s3_bucket_name']}` as `{s3_key}`")
 
