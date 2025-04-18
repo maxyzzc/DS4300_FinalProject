@@ -87,20 +87,26 @@ def main():
 
             st.success(f"✅ Uploaded to S3 bucket `{aws_credentials['s3_bucket_name']}` as `{s3_key}`")
 
-            # Plotting data
+            #--------------- Plotting ----------------------
             df.Date = pd.to_datetime(df.Date)
-            df.sort_values(by='Date')
+            df = df.sort_values(by='Date')
             value_col = df.columns[1]
 
+            # Calculate 7-day moving average
+            df['7_day_mavg'] = df[value_col].rolling(window=7).mean()
+
             fig, ax = plt.subplots(figsize=(12, 6))
-            ax.plot(df['Date'], df[value_col])
+            ax.plot(df['Date'], df[value_col], label='Original', alpha=0.6)
+            ax.plot(df['Date'], df['7_day_mavg'], label='7-Day Moving Avg', linewidth=2)
             ax.set_title(value_col, fontweight='bold')
             ax.set_xlabel("Date")
             ax.set_ylabel("Value")
+            ax.legend()
             plt.xticks(rotation=45)
             plt.grid()
 
-            st.markdown('##### Original Series')
+            # Display in Streamlit
+            st.markdown('##### Original Series with 7-Day Moving Average')
             st.pyplot(fig)
 
         except Exception as e:
