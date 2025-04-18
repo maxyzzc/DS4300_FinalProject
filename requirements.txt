@@ -3,4 +3,4 @@ pandas
 boto3
 python-dotenv
 matplotlib
-mysql
+mysql-connector-python
