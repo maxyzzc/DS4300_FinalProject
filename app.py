@@ -5,6 +5,7 @@ import io
 import datetime
 import os
 from pathlib import Path
+import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
 def load_env_variables():
@@ -30,7 +31,7 @@ def upload_to_s3(s3_client, file_path, bucket_name):
 def main():
 
     st.set_page_config(page_title="Stock Data Uploader", layout="centered")
-    st.title("📈 Time Series Analysis Tools")
+    st.title("Time Series Analysis Dashboard")
 
     # Load AWS credentials from .env
     aws_credentials = load_env_variables()
@@ -59,16 +60,16 @@ def main():
         moving averages and summary statistics.
         """)
 
-    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])
+    uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 
     if uploaded_file is not None:
         try:
             # Preview CSV
             df = pd.read_csv(uploaded_file)
-            st.write("📋 Preview:")
+            st.markdown("##### 📋 Data Preview:")
             st.dataframe(df.head())
 
-            st.write('Summary:')
+            st.markdown('##### Summary Statistics:')
             st.dataframe(df.describe().transpose())
 
             # Reset stream position before upload
@@ -78,13 +79,29 @@ def main():
             file_name = uploaded_file.name
             s3_key = f"{file_name}"
 
-            s3_client.upload_fileobj(
-                uploaded_file,
-                aws_credentials["s3_bucket_name"],
-                s3_key
-            )
+            """s3_client.upload_fileobj(
+                            uploaded_file,
+                            aws_credentials["s3_bucket_name"],
+                            s3_key
+                        )"""
 
             st.success(f"✅ Uploaded to S3 bucket `{aws_credentials['s3_bucket_name']}` as `{s3_key}`")
+
+            # Plotting data
+            df.Date = pd.to_datetime(df.Date)
+            df.sort_values(by='Date')
+            value_col = df.columns[1]
+
+            fig, ax = plt.subplots(figsize=(12, 6))
+            ax.plot(df['Date'], df[value_col])
+            ax.set_title(value_col, fontweight='bold')
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Value")
+            plt.xticks(rotation=45)
+            plt.grid()
+
+            st.markdown('##### Original Series')
+            st.pyplot(fig)
 
         except Exception as e:
             st.error(f"Upload failed: {e}")
